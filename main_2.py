@@ -113,11 +113,33 @@ def main():
 
             try:
                 while connected:
-                    if not is_connected(mac_addr):
-                        print(f"🔨 {mac_addr} 연결이 끊어졌습니다. 강의를 종료합니다.")
-                        break
-                    else:
-                        # 블루투스 출석 반복
+                    if not is_connected(mac_addr): # 강의자의 블루투스 연결이 끊어졌을 때 
+                	print(f"🔨 {mac_addr} 연결이 끊어졌습니다. 강의를 종료하시려면 0을, 다시 시작하시려면 1을 눌러주세요.")
+			user_input = input("입력: ").strip()
+			    
+		    if user_input == "0": # 강의를 완전히 종료 
+		        print("강의를 종료합니다.")
+		        break
+			
+		    elif user_input == "1": # 블루투스가 재연결되면 강의 다시 시작
+		        print("🔄 블루투스 재연결을 시도합니다. 다시 강의를 시작합니다.")
+		        start_time = time.time()
+		        reconnected = False
+		
+		        while time.time() - start_time < 10:
+		            if is_connected(mac_addr):
+		                reconnected = True
+		                break
+		            time.sleep(1)
+		
+		        if not reconnected:
+		            print("❌ 재연결 실패. 강의를 종료합니다.")
+		            break
+		        else:
+		            connected = True  # 다시 루프 지속
+		            continue
+				
+                    else: # 강의자의 블루투스 연결이 지속되어 블루투스 출석을 반복함
                         print("========= 블루투스 기기 스캔 시작 =========")
                         scanned_devices = scan_bluetooth_devices() # 스캔한 디바이스 리스트
                         print(scanned_devices)
