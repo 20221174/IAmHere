@@ -43,3 +43,28 @@ def get_mac_addresses_by_user_ids(user_ids):
     conn.close()
     
     return {row['user_id']: row['mac_address'] for row in rows}
+
+# 유저 아이디를 토대로 맥 주소 반환
+def get_mac_address_by_user_id(user_id):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT mac_address FROM bluetooth_devices
+            WHERE user_id = %s
+            LIMIT 1
+        """, (user_id,))
+        result = cursor.fetchone()
+        if result:
+            return result['mac_address']
+        else:
+            print(f"❌ 사용자 ID {user_id}에 대한 MAC 주소가 존재하지 않습니다.")
+            return None
+    except pymysql.Error as e:
+        print(f"❌ MAC 주소 조회 중 오류 발생: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
