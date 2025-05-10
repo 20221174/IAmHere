@@ -87,14 +87,14 @@ def main():
             pair_device(mac_addr)
 
         elif choice == "7":
-            mac_addr = input("맥 주소: ")
             lecture_id = input("출석 처리할 강의 ID: ").strip()
+	    lecturer_id = get_lecturer_id_by_lecture_id(lecture_id)
+	    mac_addr = get_mac_address_by_user_id(lecturer_id) # 강의자 기기의 맥 주소 가져옴
             print("블루투스가 연결되면 강의를 시작합니다...\n")
 
             # 강의자의 휴대폰에 10초 동안 블루투스 연결 시도
             start_time = time.time()
             connected = False
-
             while time.time() - start_time < 10:
                 if is_connected(mac_addr):
                     connected = True
@@ -105,7 +105,7 @@ def main():
             if not connected:
                 print("⏰ 10초 내에 연결되지 않았습니다. 강의를 시작할 수 없습니다.\n")
 
-            # 강의 시작
+            # 연결에 성공하여 강의가 시작됨
             print("✍️ 강의를 시작합니다. 모두 자리에 착석해주세요!")
             misbehaving_students = set() # 블루투스 출석에 실패한 학생들의 아이디 집합(중복값을 제거하기 위함)
             enrolled_users = get_enrolled_user_ids(lecture_id) # 해당 강의를 신청한 학생 리스트
