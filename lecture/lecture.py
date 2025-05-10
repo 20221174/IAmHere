@@ -29,3 +29,26 @@ def add_lecture(title, day, lecturer_id, start_time, end_time, start_date, end_d
         if conn:
             conn.close()
 
+def get_lecturer_id_by_lecture_id(lecture_id):
+    # 강의 ID를 통해 강의자의 ID를 조회
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT lecturer_id FROM lectures WHERE id = %s
+        """, (lecture_id,))
+
+        result = cursor.fetchone()
+        if result:
+            return result[0]
+        else:
+            print(f"❌ 강의 ID {lecture_id}에 해당하는 강의가 없습니다.")
+            return None
+    except pymysql.Error as e:
+        print(f"❌ 강의자 ID 조회 중 오류 발생: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
