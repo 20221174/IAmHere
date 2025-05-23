@@ -1,9 +1,10 @@
+from config.config import AES_KEY
 from db import *
 from bluetooth import *
 from fingerprint import *
 from notifier import *
 import time
-
+from AES256 import *
 def main():
     initialize_database()
 
@@ -15,6 +16,10 @@ def main():
     lecture_dao = LectureDAO()
     fingerprint_dao = FingerprintDAO()
 
+    
+    # AES56 객체 생성
+    aes_cipher = AES256(AES_KEY)
+    
     while True:
         print("\n===== 메인 메뉴 =====")
         print("6. 블루투스 페어링")
@@ -89,6 +94,9 @@ def main():
 
             print(f"블루투스 출석을 실패한 학생들! 😡 지문 출석을 하세요!")
             misbehaving_students_list = list(misbehaving_students)
+
+
+
             print(f"블루투스 출석에 실패한 학생들: {misbehaving_students_list}\n")
 
             for user_id in misbehaving_students_list:
@@ -103,14 +111,18 @@ def main():
                 send_check(student_name, lecture_title)
 
                 fingerprint_data = fingerprint_dao.get_fingerprint_by_user_id(user_id)
+                
+                decrypted_fingerprint_data = aes_cipher.dcrypt(fingerprint_data) # 복호화 
+                
 
                 max_attempts = 3
                 success = False
 
                 for attempt in range(1, max_attempts + 1):
                     print(f"🔁 지문 인증 시도 {attempt}/{max_attempts}")
-
-                    if verify_fingerprint(fingerprint_data): # 지문 인식 성공 시
+                    
+                    
+                    if verify_fingerprint(decrypted_fingerprint_data): # 지문 인식 성공 시 
                         if attendance_dao.add_attendance(user_id, lecture_id, method="Both", status="2차출석완료"):
                             print(f"✅ 사용자 {user_id}의 출석 처리 완료")
                         else:
