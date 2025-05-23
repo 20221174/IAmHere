@@ -1,3 +1,5 @@
+from config.config import AES_KEY
+from AES256 import *  # AES 암호화 모듈 추가
 from fingerprint import *
 from db import *
 
@@ -11,6 +13,8 @@ def main():
     enrollment_dao = EnrollmentDAO()
     bluetooth_dao = BluetoothDeviceDAO()
     fingerprint_dao = FingerprintDAO()
+
+    aes_cipher = AES256(AES_KEY)  # AES 객체 생성
 
     while True:
         print("\n===== 메인 메뉴 =====")
@@ -102,10 +106,12 @@ def main():
         elif choice == "5":
             user_id = input("지문 등록할 사용자 ID: ").strip()
             fingerprint_data = scan_fingerprint()
-            result = fingerprint_dao.add_fingerprint(user_id, fingerprint_data)
-            print(result)
-            if fingerprint_dao.add_fingerprint(user_id, fingerprint_data):
-                print("✅ 지문 등록 완료")
+
+            # 👇 여기에 암호화 적용
+            encrypted_data = aes_cipher.encrypt(fingerprint_data)
+
+            if fingerprint_dao.add_fingerprint(user_id, encrypted_data):
+                print("✅ 지문 등록 완료 (암호화됨)")
             else:
                 print("❌ 지문 등록 실패")
 

@@ -111,9 +111,14 @@ def main():
                 send_check(student_name, lecture_title)
 
                 fingerprint_data = fingerprint_dao.get_fingerprint_by_user_id(user_id)
-                
-                decrypted_fingerprint_data = aes_cipher.dcrypt(fingerprint_data) # 복호화 
-                
+
+                if fingerprint_data is not None:
+                    encrypted_fingerprint_data = fingerprint_data['fingerprint_template']  # 암호화된 문자열 필드 이름이 'fingerprint' 라고 가정
+                    decrypted_fingerprint_data = aes_cipher.decrypt(encrypted_fingerprint_data)  # 복호화
+                else:
+                    print("지문 데이터가 없습니다.")
+
+                fingerprint_data['fingerprint_template'] = decrypted_fingerprint_data
 
                 max_attempts = 3
                 success = False
@@ -121,8 +126,7 @@ def main():
                 for attempt in range(1, max_attempts + 1):
                     print(f"🔁 지문 인증 시도 {attempt}/{max_attempts}")
                     
-                    
-                    if verify_fingerprint(decrypted_fingerprint_data): # 지문 인식 성공 시 
+                    if verify_fingerprint(fingerprint_data): # 지문 인식 성공 시 
                         if attendance_dao.add_attendance(user_id, lecture_id, method="Both", status="2차출석완료"):
                             print(f"✅ 사용자 {user_id}의 출석 처리 완료")
                         else:
